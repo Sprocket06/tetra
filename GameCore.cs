@@ -45,6 +45,12 @@ namespace tetra
             {
                 Quit();
             }
+            GameField.KeyPressed(e);
+        }
+
+        protected override void KeyReleased(KeyEventArgs e)
+        {
+            GameField.KeyReleased(e);
         }
 
         protected override void Draw(RenderContext context)

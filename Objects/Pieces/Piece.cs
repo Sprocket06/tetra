@@ -16,5 +16,31 @@ namespace tetra.Objects.Pieces
         {
             Grid = new Grid(new Size(gridSize, gridSize));
         }
+
+        public void RotateCW()
+        {
+            var newGrid = new Grid(Grid.Size);
+            for(var y = 0; y < Grid.Size.Height; y++)
+            {
+                for(var x = 0; x < Grid.Size.Width; x++)
+                {
+                    newGrid[(Grid.Size.Width-1) - y ,x] = Grid[x, y];
+                }
+            }
+            Grid = newGrid;
+        }
+
+        public void RotateCCW()
+        {
+            var newGrid = new Grid(Grid.Size);
+            for (var y = 0; y < Grid.Size.Height; y++)
+            {
+                for (var x = 0; x < Grid.Size.Width; x++)
+                {
+                    newGrid[y, (Grid.Size.Width-1) - x] = Grid[x, y];
+                }
+            }
+            Grid = newGrid;
+        }
     }
 }
