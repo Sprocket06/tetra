@@ -16,18 +16,18 @@ namespace tetra.Objects.Pieces
         public Vector2[][] WallKicks { get; private set; }
         protected Piece(int gridSize)
         {
-            Grid = new Grid(new Size(gridSize, gridSize));
+            Grid = new Grid(new Vector2(gridSize, gridSize));
             Orientation = 0;
         }
 
         public Grid RotateCW()
         {
             var newGrid = new Grid(Grid.Size);
-            for(var y = 0; y < Grid.Size.Height; y++)
+            for(var y = 0; y < Grid.Size.Y; y++)
             {
-                for(var x = 0; x < Grid.Size.Width; x++)
+                for(var x = 0; x < Grid.Size.X; x++)
                 {
-                    newGrid[(Grid.Size.Width-1) - y ,x] = Grid[x, y];
+                    newGrid[(int)(Grid.Size.X-1) - y ,x] = Grid[x, y];
                 }
             }
             return newGrid;
@@ -36,11 +36,11 @@ namespace tetra.Objects.Pieces
         public Grid RotateCCW()
         {
             var newGrid = new Grid(Grid.Size);
-            for (var y = 0; y < Grid.Size.Height; y++)
+            for (var y = 0; y < Grid.Size.Y; y++)
             {
-                for (var x = 0; x < Grid.Size.Width; x++)
+                for (var x = 0; x < Grid.Size.X; x++)
                 {
-                    newGrid[y, (Grid.Size.Width-1) - x] = Grid[x, y];
+                    newGrid[y, (int)(Grid.Size.X-1) - x] = Grid[x, y];
                 }
             }
             return newGrid;

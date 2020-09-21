@@ -9,10 +9,10 @@ namespace tetra.Objects.Pieces
     {
         public TPiece() : base(3)
         {
-            Grid[1,0] = (int)PieceColors.Purple;
-            Grid[0,1] = (int)PieceColors.Purple;
-            Grid[1,1] = (int)PieceColors.Purple;
-            Grid[2,1] = (int)PieceColors.Purple;
+            Grid[1,0] = 3;
+            Grid[0,1] = 3;
+            Grid[1,1] = 3;
+            Grid[2,1] = 3;
             Color = Color.Purple;
         }
     }
