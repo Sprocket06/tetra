@@ -22,8 +22,9 @@ namespace tetra
 
         internal GameCore()
         {
-            GameField = new GameBoard(new Vector2(20, 20), new Size(10, 22));
+            GameField = new GameBoard(new Vector2(20, 20), new Vector2(10, 22));
             GameField.RegisterPiece<TPiece>();
+            GameField.RegisterPiece<IPiece>();
             GameField.SpawnPiece();
             FixedUpdateFrequency = 60;
             Window.Title = "Tetra";
