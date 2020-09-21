@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Numerics;
 using System.Text;
 using Chroma;
@@ -10,35 +9,35 @@ namespace tetra.Objects
 {
     class Grid
     {
-        private bool[] Cells;
-        public Size Size { get; private set; }
+        private int[] Cells;
+        public Vector2 Size { get; private set; }
 
-        public Grid(Size size)
+        public Grid(Vector2 size)
         {
             Size = size;
-            Cells = new bool[size.Width * size.Height];
+            Cells = new int[ (int)size.X * (int)size.Y ];
 
             //initialize grid
-            for(var i = 0; i < size.Width*size.Height; i++)
+            for(var i = 0; i < size.X*size.Y; i++)
             {
-                Cells[i] = false;
+                Cells[i] = 0;
             }
         }
 
-        public bool this[int x, int y]
+        public int this[int x, int y]
         {
             get
             {
-                return Cells[(y * Size.Width) + x];
+                return Cells[(y * (int)Size.X) + x];
             }
             set
             {
-                Cells[(y * Size.Width) + x] = value;
+                Cells[(y * (int)Size.X) + x] = value;
             }
         }
 
         public bool InBounds(int x, int y)
-            => x >= 0 && x < Size.Width && y >= 0 && y < Size.Height;
+            => x >= 0 && x < (int)Size.X && y >= 0 && y < (int)Size.Y;
 
     }
 }

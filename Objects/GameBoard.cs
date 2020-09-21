@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Numerics;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Text;
 using Chroma;
 using Chroma.Graphics;
@@ -15,6 +14,8 @@ namespace tetra.Objects
 {
     class GameBoard
     {
+        static Chroma.Graphics.Color[] Colors = { Color.Black, Color.Cyan, Color.Yellow, Color.Purple, Color.Red, Color.Green, Color.Blue, Color.Orange };
+
         public Random RNG;
         public Grid Grid {get; private set;}
         public Vector2 Position;
@@ -23,11 +24,14 @@ namespace tetra.Objects
         public List<Type> Pieces;
         public int Gravity { get; private set; }
         public int LockDelay = 30;
+        public int RepeatDelay = 3;
+
         private int GravTimer;
         private int LockTimer;
+        private int RepeatTimer;
         private bool canDrop = true;
 
-        public GameBoard(Vector2 position, Size size, int cellSize = 24)
+        public GameBoard(Vector2 position, Vector2 size, int cellSize = 24)
         {
             Grid = new Grid(size);
             Position = position;
@@ -37,6 +41,7 @@ namespace tetra.Objects
             Gravity = 60;
             GravTimer = Gravity;
             LockTimer = LockDelay;
+            RepeatTimer = 0;
         }
 
         public void RegisterPiece<T>() where T : Piece
@@ -50,18 +55,19 @@ namespace tetra.Objects
             CurrentPiece.Position = new Vector2(3, 0);
             LockTimer = LockDelay;
             GravTimer = Gravity;
+            RepeatTimer = 0;
         }
 
         public void Draw(RenderContext ctx)
         {
             //Time to draw the grid 
-            for (var y = 0; y < Grid.Size.Height; y++)
+            for (var y = 0; y < Grid.Size.Y; y++)
             {
-                for (var x = 0; x < Grid.Size.Width; x++)
+                for (var x = 0; x < Grid.Size.X; x++)
                 {
-                    if (Grid[x, y])
+                    if (Grid[x, y] != 0)
                     {
-                        ctx.Rectangle(ShapeMode.Fill, new Rectangle(new Point((int)Position.X + (x * CellSize), (int)Position.Y + (y * CellSize)), new Size(CellSize, CellSize)), Chroma.Graphics.Color.Purple);
+                        ctx.Rectangle(ShapeMode.Fill, new Vector2((int)Position.X + (x * CellSize), (int)Position.Y + (y * CellSize)), CellSize, CellSize, Colors[Grid[x,y]]);
                     }
                 }
             }
@@ -72,11 +78,11 @@ namespace tetra.Objects
             //Draw current piece
             if(CurrentPiece != null)
             {
-                for(var y = 0; y < CurrentPiece.Grid.Size.Height; y++)
+                for(var y = 0; y < CurrentPiece.Grid.Size.Y; y++)
                 {
-                    for(var x = 0; x < CurrentPiece.Grid.Size.Width; x++)
+                    for(var x = 0; x < CurrentPiece.Grid.Size.X; x++)
                     {
-                        if (CurrentPiece.Grid[x, y])
+                        if (CurrentPiece.Grid[x, y] != 0)
                         { 
                             ctx.Rectangle(
                                 ShapeMode.Fill,
@@ -84,7 +90,7 @@ namespace tetra.Objects
                                     Position.X + (((int)CurrentPiece.Position.X + x) * CellSize),
                                     Position.Y + (((int)CurrentPiece.Position.Y + y) * CellSize)
                                 ),
-                                new Size(CellSize, CellSize),
+                                CellSize, CellSize,
                                 CurrentPiece.Color
                             );
                         }
@@ -93,21 +99,24 @@ namespace tetra.Objects
             }
 
             // Time to draw the grid lines
-            for (var x = 0; x <= Grid.Size.Width; x++)
+            for (var x = 0; x <= Grid.Size.X; x++)
             {
-                ctx.Line(new Vector2(Position.X + x * CellSize, Position.Y), new Vector2(Position.X + x * CellSize, Position.Y + Grid.Size.Height * CellSize), Chroma.Graphics.Color.White);
+                ctx.Line(new Vector2(Position.X + x * CellSize, Position.Y), new Vector2(Position.X + x * CellSize, Position.Y + Grid.Size.Y * CellSize), Chroma.Graphics.Color.White);
             }
-            for (var y = 0; y <= Grid.Size.Height; y++)
+            for (var y = 0; y <= Grid.Size.Y; y++)
             {
-                ctx.Line(new Vector2(Position.X, Position.Y + y * CellSize), new Vector2(Position.X + Grid.Size.Width * CellSize, Position.Y + y * CellSize), Chroma.Graphics.Color.White);
+                ctx.Line(new Vector2(Position.X, Position.Y + y * CellSize), new Vector2(Position.X + Grid.Size.X * CellSize, Position.Y + y * CellSize), Chroma.Graphics.Color.White);
             }
         }
 
         public void KeyPressed(KeyEventArgs e)
         {
+            //oh boy, time for this to get a lot less clean lmao
             if(e.KeyCode == KeyCode.X)
             {
-                CurrentPiece.RotateCW();
+                int newOrientation = (CurrentPiece.Orientation + 1) % 4;
+                Grid grid = CurrentPiece.RotateCW();
+                
             }
             else if(e.KeyCode == KeyCode.Z)
             {
@@ -140,14 +149,14 @@ namespace tetra.Objects
 
                 //Actual collision time
                 canDrop = true;
-                for (var y = 0; y < CurrentPiece.Grid.Size.Height; y++)
+                for (var y = 0; y < CurrentPiece.Grid.Size.Y; y++)
                 {
-                    for (var x = 0; x < CurrentPiece.Grid.Size.Width; x++)
+                    for (var x = 0; x < CurrentPiece.Grid.Size.X; x++)
                     {
                         //if we're not looking at an actually occupied block in the grid, stop, there's nothing to collision-check
-                        if (!CurrentPiece.Grid[x, y]) continue;
+                        if (CurrentPiece.Grid[x, y] == 0) continue;
                         //check below first
-                        if (!Grid.InBounds(x + (int)CurrentPiece.Position.X, y + (int)CurrentPiece.Position.Y + 1) || Grid[x + (int)CurrentPiece.Position.X, y + (int)CurrentPiece.Position.Y + 1])
+                        if (!Grid.InBounds(x + (int)CurrentPiece.Position.X, y + (int)CurrentPiece.Position.Y + 1) || Grid[x + (int)CurrentPiece.Position.X, y + (int)CurrentPiece.Position.Y + 1] != 0)
                         {
                             canDrop = false;
                         }
@@ -174,45 +183,53 @@ namespace tetra.Objects
             // now we do left/right movement
             bool canMove = true;
             int deltaX = 0;
-            if (Keyboard.IsKeyDown(KeyCode.Left))
+            if (RepeatTimer == 0)
             {
-                deltaX -= 1;
-            }
-            if (Keyboard.IsKeyDown(KeyCode.Right))
-            {
-                deltaX += 1;
-            }
-            if(deltaX != 0)
-            {
-                for (var y = 0; y < CurrentPiece.Grid.Size.Height; y++)
+                if (Keyboard.IsKeyDown(KeyCode.Left))
                 {
-                    for (var x = 0; x < CurrentPiece.Grid.Size.Width; x++)
+                    deltaX -= 1;
+                }
+                if (Keyboard.IsKeyDown(KeyCode.Right))
+                {
+                    deltaX += 1;
+                }
+                if (deltaX != 0)
+                {
+                    for (var y = 0; y < CurrentPiece.Grid.Size.Y; y++)
                     {
-                        //if we're not looking at an actually occupied block in the grid, stop, there's nothing to collision-check
-                        if (!CurrentPiece.Grid[x, y]) continue;
-                        //check below first
-                        if (!Grid.InBounds(x + (int)CurrentPiece.Position.X, y + (int)CurrentPiece.Position.Y + deltaX) || Grid[x + (int)CurrentPiece.Position.X + deltaX, y + (int)CurrentPiece.Position.Y])
+                        for (var x = 0; x < CurrentPiece.Grid.Size.X; x++)
                         {
-                            canMove = false;
+                            //if we're not looking at an actually occupied block in the grid, stop, there's nothing to collision-check
+                            if (CurrentPiece.Grid[x, y] == 0) continue;
+                            //check below first
+                            if (!Grid.InBounds(x + (int)CurrentPiece.Position.X + deltaX, y + (int)CurrentPiece.Position.Y) || Grid[x + (int)CurrentPiece.Position.X + deltaX, y + (int)CurrentPiece.Position.Y] != 0)
+                            {
+                                canMove = false;
+                            }
                         }
                     }
                 }
-            }
-            if (canMove)
+                if (canMove)
+                {
+                    CurrentPiece.Position.X += deltaX;
+                }
+                RepeatTimer = 3;
+            }else
             {
-                CurrentPiece.Position.X += deltaX;
+                RepeatTimer -= 1;
             }
+
         }
         
         private void Lock()
         {
             LockTimer = LockDelay;
             //ok, we need to yeet piece into array now for new piece
-            for(var y = 0; y < CurrentPiece.Grid.Size.Height; y++)
+            for(var y = 0; y < CurrentPiece.Grid.Size.Y; y++)
             {
-                for(var x = 0; x < CurrentPiece.Grid.Size.Width; x++)
+                for(var x = 0; x < CurrentPiece.Grid.Size.X; x++)
                 {
-                    if (!CurrentPiece.Grid[x, y]) continue;
+                    if (CurrentPiece.Grid[x, y] == 0) continue;
                     Grid[x + (int)CurrentPiece.Position.X, y + (int)CurrentPiece.Position.Y] = CurrentPiece.Grid[x, y];
                 }
             }

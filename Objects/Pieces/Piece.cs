@@ -12,12 +12,15 @@ namespace tetra.Objects.Pieces
         public Grid Grid { get; private set; }
         public Vector2 Position;
         public Chroma.Graphics.Color Color;
+        public int Orientation { get; set; }
+        public Vector2[][] WallKicks { get; private set; }
         protected Piece(int gridSize)
         {
             Grid = new Grid(new Size(gridSize, gridSize));
+            Orientation = 0;
         }
 
-        public void RotateCW()
+        public Grid RotateCW()
         {
             var newGrid = new Grid(Grid.Size);
             for(var y = 0; y < Grid.Size.Height; y++)
@@ -27,10 +30,10 @@ namespace tetra.Objects.Pieces
                     newGrid[(Grid.Size.Width-1) - y ,x] = Grid[x, y];
                 }
             }
-            Grid = newGrid;
+            return newGrid;
         }
 
-        public void RotateCCW()
+        public Grid RotateCCW()
         {
             var newGrid = new Grid(Grid.Size);
             for (var y = 0; y < Grid.Size.Height; y++)
@@ -40,7 +43,7 @@ namespace tetra.Objects.Pieces
                     newGrid[y, (Grid.Size.Width-1) - x] = Grid[x, y];
                 }
             }
-            Grid = newGrid;
+            return newGrid;
         }
     }
 }
