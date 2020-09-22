@@ -146,7 +146,7 @@ namespace tetra.Objects
                 Vector2 wallKick = new Vector2(0, 0);
                 while (!collisionCheck)
                 {
-                    kicksTried += 1;
+                    if (kicksTried == 4) break;
                     if (isIPiece)
                     {
                         wallKick = IKickData[new Vector2(CurrentPiece.Orientation, newOrientation)][kicksTried];
@@ -156,10 +156,15 @@ namespace tetra.Objects
                         wallKick = NormalKickData[new Vector2(CurrentPiece.Orientation, newOrientation)][kicksTried];
                     }
                     collisionCheck = CollisionCheck(grid, CurrentPiece.Position + wallKick);
+                    kicksTried += 1;
                 }
-                CurrentPiece.Orientation = newOrientation;
-                CurrentPiece.Grid = grid;
-                CurrentPiece.Position += wallKick;
+                if (collisionCheck)
+                {
+                    CurrentPiece.Orientation = newOrientation;
+                    CurrentPiece.Grid = grid;
+                    CurrentPiece.Position += wallKick;
+                }
+               
             }
             else if(e.KeyCode == KeyCode.Z)
             {
@@ -172,7 +177,7 @@ namespace tetra.Objects
                 Vector2 wallKick = new Vector2(0, 0);
                 while (!collisionCheck)
                 {
-                    kicksTried += 1;
+                    if (kicksTried == 4) break;
                     if (isIPiece)
                     {
                         wallKick = IKickData[new Vector2(CurrentPiece.Orientation, newOrientation)][kicksTried];
@@ -182,10 +187,14 @@ namespace tetra.Objects
                         wallKick = NormalKickData[new Vector2(CurrentPiece.Orientation, newOrientation)][kicksTried];
                     }
                     collisionCheck = CollisionCheck(grid, CurrentPiece.Position + wallKick);
+                    kicksTried += 1;
                 }
-                CurrentPiece.Orientation = newOrientation;
-                CurrentPiece.Grid = grid;
-                CurrentPiece.Position += wallKick;
+                if (collisionCheck)
+                {
+                    CurrentPiece.Orientation = newOrientation;
+                    CurrentPiece.Grid = grid;
+                    CurrentPiece.Position += wallKick;
+                }
             }
             else if(e.KeyCode == KeyCode.Down)
             {
