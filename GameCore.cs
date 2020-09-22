@@ -18,10 +18,13 @@ namespace tetra
 {
     class GameCore : Game
     {
+        internal static string ContentPath;
+
         private GameBoard GameField;
 
         internal GameCore()
         {
+            ContentPath = Content.ContentRoot;
             GameField = new GameBoard(new Vector2(20, 20), new Vector2(10, 22));
             GameField.RegisterPiece<TPiece>();
             GameField.RegisterPiece<IPiece>();
