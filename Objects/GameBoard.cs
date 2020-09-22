@@ -9,12 +9,35 @@ using System.Security.Cryptography;
 using System.Diagnostics;
 using Chroma.Input.EventArgs;
 using Chroma.Input;
+using System.Data;
 
 namespace tetra.Objects
 {
     class GameBoard
     {
-        static Chroma.Graphics.Color[] Colors = { Color.Black, Color.Cyan, Color.Yellow, Color.Purple, Color.Red, Color.Green, Color.Blue, Color.Orange };
+        static Color[] Colors = { Color.Black, Color.Cyan, Color.Yellow, Color.Purple, Color.Red, Color.Green, Color.Blue, Color.Orange };
+        static Dictionary<Vector2, Vector2[]> NormalKickData = new Dictionary<Vector2, Vector2[]>
+        {
+            { new Vector2(0,1) , new Vector2[] { new Vector2(-1,0), new Vector2(-1,-1), new Vector2(0, 2), new Vector2(-1,2) } },
+            { new Vector2(1,0) , new Vector2[] { new Vector2(1,0), new Vector2(1,1), new Vector2(0,-2), new Vector2(1,-2)} },
+            { new Vector2(1,2) , new Vector2[] { new Vector2(1,0), new Vector2(1,1), new Vector2(0,-2), new Vector2(1,-2) } }, 
+            { new Vector2(2,1) , new Vector2[] { new Vector2(-1,0), new Vector2(-1,-1), new Vector2(0,2), new Vector2(-1,2) } },
+            { new Vector2(2,3) , new Vector2[] { new Vector2(1,0), new Vector2(1,-1), new Vector2(0,2), new Vector2(1,2) } },
+            { new Vector2(3,2) , MakeKickList((-1,0),(-1,1),(0,-2),(-1,-2)) },
+            { new Vector2(3,0) , MakeKickList((-1,0),(-1,1),(0,-2),(-1,-2)) },
+            { new Vector2(0,3) , MakeKickList((1,0),(1,-1),(0,2),(1,2)) }
+        };
+        static Dictionary<Vector2, Vector2[]> IKickData = new Dictionary<Vector2, Vector2[]>
+        {
+            { new Vector2(0,1) , MakeKickList((-2,0),(1,0),(-2,1),(1,-2)) },
+            { new Vector2(1,0) , MakeKickList((2,0),(-1,0),(2,-1),(-1,2))},
+            { new Vector2(1,2) , MakeKickList((-1,0),(2,0),(-1,-2),(2,1))},
+            { new Vector2(2,1) , MakeKickList((1,0),(-2,0),(1,2),(-2,-1))},
+            { new Vector2(2,3) , MakeKickList((2,0),(-1,0),(2,-1),(-1,2))},
+            { new Vector2(3,2) , MakeKickList((-2,0),(1,0),(-2,1),(1,-2))},
+            { new Vector2(3,0) , MakeKickList((1,0),(-2,0),(1,2),(-2,-1))},
+            { new Vector2(0,3) , MakeKickList((-1,0),(2,0),(-1,-2),(2,1))}
+        }; 
 
         public Random RNG;
         public Grid Grid {get; private set;}
@@ -112,15 +135,57 @@ namespace tetra.Objects
         public void KeyPressed(KeyEventArgs e)
         {
             //oh boy, time for this to get a lot less clean lmao
-            if(e.KeyCode == KeyCode.X)
+            if(e.KeyCode == KeyCode.X) // rotation clockwise
             {
-                int newOrientation = (CurrentPiece.Orientation + 1) % 4;
+                int newOrientation = ((CurrentPiece.Orientation + 1) % 4 + 4) % 4; //thank you stackoverflow for this btw, <3
                 Grid grid = CurrentPiece.RotateCW();
-                
+                //oh boy, *collision* time
+                bool collisionCheck = CollisionCheck(grid, CurrentPiece.Position);
+                bool isIPiece = CurrentPiece.Color == Color.Cyan; //bit bootleg but whatever
+                int kicksTried = 0;
+                Vector2 wallKick = new Vector2(0, 0);
+                while (!collisionCheck)
+                {
+                    kicksTried += 1;
+                    if (isIPiece)
+                    {
+                        wallKick = IKickData[new Vector2(CurrentPiece.Orientation, newOrientation)][kicksTried];
+                    }
+                    else
+                    {
+                        wallKick = NormalKickData[new Vector2(CurrentPiece.Orientation, newOrientation)][kicksTried];
+                    }
+                    collisionCheck = CollisionCheck(grid, CurrentPiece.Position + wallKick);
+                }
+                CurrentPiece.Orientation = newOrientation;
+                CurrentPiece.Grid = grid;
+                CurrentPiece.Position += wallKick;
             }
             else if(e.KeyCode == KeyCode.Z)
             {
-                CurrentPiece.RotateCCW();
+                int newOrientation = ((CurrentPiece.Orientation - 1) % 4 + 4) % 4;
+                Grid grid = CurrentPiece.RotateCCW();
+                //oh boy, *collision* time
+                bool collisionCheck = CollisionCheck(grid, CurrentPiece.Position);
+                bool isIPiece = CurrentPiece.Color == Color.Cyan; //bit bootleg but whatever
+                int kicksTried = 0;
+                Vector2 wallKick = new Vector2(0, 0);
+                while (!collisionCheck)
+                {
+                    kicksTried += 1;
+                    if (isIPiece)
+                    {
+                        wallKick = IKickData[new Vector2(CurrentPiece.Orientation, newOrientation)][kicksTried];
+                    }
+                    else
+                    {
+                        wallKick = NormalKickData[new Vector2(CurrentPiece.Orientation, newOrientation)][kicksTried];
+                    }
+                    collisionCheck = CollisionCheck(grid, CurrentPiece.Position + wallKick);
+                }
+                CurrentPiece.Orientation = newOrientation;
+                CurrentPiece.Grid = grid;
+                CurrentPiece.Position += wallKick;
             }
             else if(e.KeyCode == KeyCode.Down)
             {
@@ -142,7 +207,7 @@ namespace tetra.Objects
             if (GravTimer == 0) { 
                 //Aight, time for gravity
                 var newPos = new Vector2(CurrentPiece.Position.X, CurrentPiece.Position.Y);
-                newPos.Y += 1;
+                newPos.Y += 1; // I can't believe I actually don't use this at all k e k
                 Debug.Print("----------");
                 Debug.Print(Gravity.ToString());
                 Debug.Print(newPos.Y.ToString());
@@ -237,6 +302,29 @@ namespace tetra.Objects
 
             //ok it is time to spawn new piece now.
             SpawnPiece();
+        }
+
+        private static Vector2[] MakeKickList( (int, int)k1, (int, int)k2, (int,int)k3, (int, int)k4 )
+        {
+            return new Vector2[] { new Vector2(k1.Item1, k1.Item2), new Vector2(k2.Item1, k2.Item2), new Vector2(k3.Item1, k3.Item2), new Vector2(k4.Item1, k4.Item2) };
+        }
+
+        private bool CollisionCheck(Grid pieceGrid, Vector2 gridPos)
+        {
+            bool noCollisions = true;
+            for (int y = 0; y < pieceGrid.Size.Y; y++)
+            {
+                for (int x = 0; x < pieceGrid.Size.X; x++)
+                {
+                    if (pieceGrid[x, y] == 0) continue;
+                    if (!Grid.InBounds(x + (int)gridPos.X, y + (int)gridPos.Y) || Grid[x + (int)gridPos.X, y + (int)gridPos.Y] != 0)
+                    {
+                        noCollisions = false;
+                    }
+                }
+            }
+
+            return noCollisions;
         }
     }
 }

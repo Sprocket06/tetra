@@ -9,7 +9,7 @@ namespace tetra.Objects.Pieces
 {
     class Piece
     {
-        public Grid Grid { get; private set; }
+        public Grid Grid { get; set; }
         public Vector2 Position;
         public Chroma.Graphics.Color Color;
         public int Orientation { get; set; }
