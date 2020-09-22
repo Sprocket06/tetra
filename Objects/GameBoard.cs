@@ -10,34 +10,20 @@ using System.Diagnostics;
 using Chroma.Input.EventArgs;
 using Chroma.Input;
 using System.Data;
+using System.IO;
 
 namespace tetra.Objects
 {
     class GameBoard
     {
         static Color[] Colors = { Color.Black, Color.Cyan, Color.Yellow, Color.Purple, Color.Red, Color.Green, Color.Blue, Color.Orange };
-        static Dictionary<Vector2, Vector2[]> NormalKickData = new Dictionary<Vector2, Vector2[]>
-        {
-            { new Vector2(0,1) , new Vector2[] { new Vector2(-1,0), new Vector2(-1,-1), new Vector2(0, 2), new Vector2(-1,2) } },
-            { new Vector2(1,0) , new Vector2[] { new Vector2(1,0), new Vector2(1,1), new Vector2(0,-2), new Vector2(1,-2)} },
-            { new Vector2(1,2) , new Vector2[] { new Vector2(1,0), new Vector2(1,1), new Vector2(0,-2), new Vector2(1,-2) } }, 
-            { new Vector2(2,1) , new Vector2[] { new Vector2(-1,0), new Vector2(-1,-1), new Vector2(0,2), new Vector2(-1,2) } },
-            { new Vector2(2,3) , new Vector2[] { new Vector2(1,0), new Vector2(1,-1), new Vector2(0,2), new Vector2(1,2) } },
-            { new Vector2(3,2) , MakeKickList((-1,0),(-1,1),(0,-2),(-1,-2)) },
-            { new Vector2(3,0) , MakeKickList((-1,0),(-1,1),(0,-2),(-1,-2)) },
-            { new Vector2(0,3) , MakeKickList((1,0),(1,-1),(0,2),(1,2)) }
-        };
-        static Dictionary<Vector2, Vector2[]> IKickData = new Dictionary<Vector2, Vector2[]>
-        {
-            { new Vector2(0,1) , MakeKickList((-2,0),(1,0),(-2,1),(1,-2)) },
-            { new Vector2(1,0) , MakeKickList((2,0),(-1,0),(2,-1),(-1,2))},
-            { new Vector2(1,2) , MakeKickList((-1,0),(2,0),(-1,-2),(2,1))},
-            { new Vector2(2,1) , MakeKickList((1,0),(-2,0),(1,2),(-2,-1))},
-            { new Vector2(2,3) , MakeKickList((2,0),(-1,0),(2,-1),(-1,2))},
-            { new Vector2(3,2) , MakeKickList((-2,0),(1,0),(-2,1),(1,-2))},
-            { new Vector2(3,0) , MakeKickList((1,0),(-2,0),(1,2),(-2,-1))},
-            { new Vector2(0,3) , MakeKickList((-1,0),(2,0),(-1,-2),(2,1))}
-        }; 
+        static readonly Dictionary<Vector2, Vector2[]> NormalKickData = 
+            VectorDictSerializer.ReadVectorDict(
+            File.ReadAllBytes(Path.Combine(GameCore.ContentPath, "KickData.vff")));
+
+        private static readonly Dictionary<Vector2, Vector2[]> IKickData =
+            VectorDictSerializer.ReadVectorDict(
+                File.ReadAllBytes(Path.Combine(GameCore.ContentPath, "IKickData.vff")));
 
         public Random RNG;
         public Grid Grid {get; private set;}
