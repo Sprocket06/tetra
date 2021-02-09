@@ -1,18 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Numerics;
-using System.Drawing;
+﻿using System.Numerics;
 using Chroma;
 using Chroma.Graphics;
 using Chroma.Input;
-using Chroma.Input.EventArgs;
-using Chroma.Windowing;
 using tetra.Objects;
 using tetra.Objects.Pieces;
-using Chroma.Diagnostics;
-using Chroma.Diagnostics.Logging;
-using System.Diagnostics;
 
 namespace tetra
 {
@@ -29,7 +20,7 @@ namespace tetra
             GameField.RegisterPiece<TPiece>();
             GameField.RegisterPiece<IPiece>();
             GameField.SpawnPiece();
-            FixedUpdateFrequency = 60;
+            FixedTimeStepTarget = 60;
             Window.Title = "Tetra";
         }
 

@@ -1,16 +1,11 @@
 ﻿using System;
-using System.Numerics;
 using System.Collections.Generic;
-using System.Text;
-using Chroma;
-using Chroma.Graphics;
-using tetra.Objects.Pieces;
-using System.Security.Cryptography;
 using System.Diagnostics;
-using Chroma.Input.EventArgs;
-using Chroma.Input;
-using System.Data;
 using System.IO;
+using System.Numerics;
+using Chroma.Graphics;
+using Chroma.Input;
+using tetra.Objects.Pieces;
 
 namespace tetra.Objects
 {
@@ -110,11 +105,11 @@ namespace tetra.Objects
             // Time to draw the grid lines
             for (var x = 0; x <= Grid.Size.X; x++)
             {
-                ctx.Line(new Vector2(Position.X + x * CellSize, Position.Y), new Vector2(Position.X + x * CellSize, Position.Y + Grid.Size.Y * CellSize), Chroma.Graphics.Color.White);
+                ctx.Line(new Vector2(Position.X + x * CellSize, Position.Y), new Vector2(Position.X + x * CellSize, Position.Y + Grid.Size.Y * CellSize), Color.White);
             }
             for (var y = 0; y <= Grid.Size.Y; y++)
             {
-                ctx.Line(new Vector2(Position.X, Position.Y + y * CellSize), new Vector2(Position.X + Grid.Size.X * CellSize, Position.Y + y * CellSize), Chroma.Graphics.Color.White);
+                ctx.Line(new Vector2(Position.X, Position.Y + y * CellSize), new Vector2(Position.X + Grid.Size.X * CellSize, Position.Y + y * CellSize), Color.White);
             }
         }
 
